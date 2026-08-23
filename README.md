@@ -1,61 +1,93 @@
-# Dar Al Tharwah Members
+# Dar Al Tharwah Members — Webflow Cloud Membership Case Study
 
-A production case study in extending a Webflow website with a secure, scalable membership application—without rebuilding the site or adding a paid membership platform.
+I built a membership and gated-content layer for [Dar Al Tharwah](https://daraltharwa.com/) without rebuilding its Webflow website or adding a separate membership SaaS.
 
-[View the live website](https://daraltharwa.com/) · [Read the full case study](CASE_STUDY.md) · [Explore the architecture](docs/ARCHITECTURE.md)
+The production code is private. This repository documents the problem, the architecture I chose, the trade-offs, and the parts of the result that can be verified publicly.
 
-> This repository is a public portfolio representation. It contains no production source code, credentials, customer data, or private operational configuration.
+[Read the case study](CASE_STUDY.md) · [View the architecture](docs/ARCHITECTURE.md)
 
-## What this project is
+## The problem
 
-Dar Al Tharwah Members adds registration, authentication, member profiles, gated resources, newsletter capture, consultation requests, and CRM-ready integration events to an existing bilingual Webflow website.
+Dar Al Tharwah already had a bilingual Webflow site, CMS, design system, and publishing workflow. It needed registration, authentication, member profiles, protected downloads, consultation requests, and a clean path to CRM/email integrations.
 
-The production MVP is live. The engineering challenge was not simply to add login screens; it was to introduce a custom application layer while preserving Webflow as the visual, editorial, and responsive source of truth.
+Moving the whole site to a conventional application stack would have duplicated working design and content systems. A membership plugin would have added another subscription and another platform boundary. Keeping authorization in browser scripts was not acceptable.
 
-## The problem solved
+I kept Webflow as the site and added a proper application boundary on Webflow Cloud.
 
-Webflow provided the right publishing and design environment, but its native capabilities did not cover the required membership and application workflows. Replatforming would have discarded an established design system and content workflow. Subscription membership tools would have introduced recurring cost, vendor constraints, and another operational dependency.
+## What I built
 
-The chosen approach extended the existing Webflow investment:
+- Registration and login with email/password and Google
+- Member bootstrap and profile management
+- Public newsletter and authenticated consultation flows
+- Server-authorized gated downloads
+- English/Arabic and LTR/RTL interactive states
+- Durable, idempotent events for future CRM/email processing
+- Separate staging and production release paths
 
-- Webflow remains responsible for pages, content, styles, responsive behavior, English/Arabic presentation, and RTL.
-- Reusable Webflow Code Components add interactive member experiences.
-- A mounted Next.js application on Webflow Cloud handles APIs and business rules.
-- Clerk provides identity, verification, recovery, and session security.
-- Webflow Cloud D1 and Drizzle store application-owned data.
-- A durable outbox records idempotent CRM/email events without making user requests depend on external vendors.
+## Architecture
 
-## Why the architecture is interesting
+~~~mermaid
+flowchart TD
+    W["Webflow<br/>Pages, CMS, design system"]
+    C["Code Components<br/>Interactive member UI"]
+    A["Webflow Cloud<br/>Next.js APIs and business rules"]
+    I["Clerk<br/>Identity and sessions"]
+    D["D1 + Drizzle<br/>Application data"]
+    O["Integration outbox<br/>CRM and email events"]
 
-This is a hybrid no-code + custom-engineering system with explicit responsibility boundaries. It avoids both extremes: forcing complex application logic into the visual layer, or replacing the Webflow site with a separate frontend.
+    W --> C
+    C --> A
+    A --> I
+    A --> D
+    A --> O
+~~~
 
-The result supports an audience of more than 40,000 users while adding no recurring platform subscription beyond the existing premium Webflow plan. That scale statement describes the product context and intended operating audience; this public repository does not claim a 40,000-user concurrent load test.
-
-## Technology overview
+The boundary is intentional:
 
 | Layer | Responsibility |
 | --- | --- |
-| Webflow | Pages, CMS/content, design system, responsive behavior, localization, RTL |
-| Webflow Code Components | Accessible interactive member UI inside Webflow-authored surfaces |
-| Webflow Cloud / Next.js | APIs, validation, authorization, business rules, content delivery |
-| Clerk | Registration, authentication, verification, recovery, sessions |
-| Webflow Cloud D1 + Drizzle | Members, submissions, content, enrollments, rate limits, outbox |
-| Integration outbox | Durable, idempotent CRM/email work for asynchronous consumers |
-| Turnstile | Server-verified abuse protection for forms |
+| Webflow | Pages, content, visual system, responsive behavior, EN/AR and RTL |
+| Code Components | Accessible interactive UI inside Webflow-authored surfaces |
+| Webflow Cloud / Next.js | Validation, authorization, business rules and protected delivery |
+| Clerk | Registration, verification, recovery and sessions |
+| D1 / Drizzle | Members, submissions, content, enrollments, rate limits and outbox records |
+| Integration outbox | Durable handoff to asynchronous CRM/email consumers |
 
-## Demonstrated product and engineering outcomes
+The browser presents state. It never grants access. Protected content is authorized again on the server and streamed without exposing its source reference.
 
-- Kept the live Webflow site and design workflow intact.
-- Delivered a production membership MVP with email/password and Google sign-in.
-- Added public newsletter and authenticated consultation workflows.
-- Enforced gated-content access and delivery on the server.
-- Preserved bilingual English/Arabic, LTR/RTL, responsive, and accessible behavior.
-- Reduced avoidable browser and database work through request coalescing, indexed joined reads, atomic rate-limit decisions, and batched related writes.
-- Avoided an additional membership-plugin or membership-SaaS subscription.
-- Established a clean integration boundary for future CRM/email processing.
+## Why I chose this approach
 
-## Scope of this repository
+It preserved the parts of Webflow that were already working well while moving identity, data, and access control to the server.
 
-This public repository documents the problem, decisions, trade-offs, architecture, and verified outcomes. The private production repository remains the source of truth and is intentionally not mirrored here.
+I also kept third-party integrations out of the request path. Registration, forms, and enrollment do not wait for a CRM or email provider. They write an idempotent outbox event that a separate consumer can process safely.
 
-For the complete narrative, see [CASE_STUDY.md](CASE_STUDY.md). For system boundaries and data flows, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Performance work focused on fewer requests and fewer database round trips: coalesced reads, single-flight bootstrap, indexed joined queries, atomic rate-limit decisions, and batched domain/outbox writes.
+
+## Live evidence
+
+The production site is public:
+
+- [Dar Al Tharwah](https://daraltharwa.com/)
+- [Books library](https://daraltharwa.com/books)
+- [Bingo — registered-member download state](https://daraltharwa.com/books/bingo-the-path-to-wealth)
+- [The Wealth Seeker — registered-member download state](https://daraltharwa.com/books/the-wealth-seeker)
+
+The private repository contains the implementation, tests, migrations, CI history, and release evidence. It remains the source of truth.
+
+## Results
+
+- The membership MVP is live in production.
+- The existing Webflow design and editorial workflow stayed intact.
+- Gated content is enforced by server APIs rather than hidden UI.
+- The product supports public and authenticated workflows in English and Arabic.
+- No separate membership SaaS subscription was introduced.
+
+Dar Al Tharwah has a business audience of more than 40,000 people. That is business context, not a claim of 40,000 registered members or 40,000 concurrent users.
+
+At launch, the project operated within the existing Webflow plan and avoided a separate membership-platform subscription. Webflow Cloud usage limits and possible overages still apply; I do not claim zero marginal cost at every future load level.
+
+## Repository scope
+
+This is a portfolio case study, not an open-source copy of production. It contains no production code, credentials, customer data, environment values, or private operational configuration.
+
+For the full decision record, read [CASE_STUDY.md](CASE_STUDY.md). For system boundaries and data flows, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
