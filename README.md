@@ -2,6 +2,8 @@
 
 I built a membership and gated-content layer for [Dar Al Tharwah](https://daraltharwa.com/) without rebuilding its Webflow website or adding a separate membership SaaS.
 
+My role covered product design, Webflow design and development, and the architecture and implementation of the custom application layer on Webflow Cloud.
+
 The production code is private. This repository documents the problem, the architecture I chose, the trade-offs, and the parts of the result that can be verified publicly.
 
 [Read the case study](CASE_STUDY.md) · [View the architecture](docs/ARCHITECTURE.md)
