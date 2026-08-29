@@ -27,6 +27,33 @@ The public case-study repository may summarize verified facts from the private d
 
 If the two repositories appear inconsistent, do not “fix” production from this repository. Re-review the current private documentation, confirm the intended public claim, and update only the case study unless the owner separately authorizes production work.
 
+## Mandatory synchronization contract
+
+The public case study must stay aligned with the current private production repository.
+
+A production change requires a portfolio-impact review when it materially affects:
+
+- System boundaries or layer ownership
+- Authentication or identity
+- Data ownership or persistence
+- Authorization, security, or privacy controls
+- Content access or delivery
+- CRM/email integration behavior
+- Scalability or performance claims
+- Cost model or platform dependencies
+- Verified results, limitations, or roadmap status
+
+The agent or maintainer responsible for that production change must review this public repository in the same release cycle.
+
+- If the public explanation is affected and can be shared safely, update it.
+- If no public change is needed, record “Portfolio impact: none” in the production completion report.
+- If a claim is no longer verifiable, narrow or remove it immediately.
+- Never update the case study from an unmerged draft or let it describe behavior that is ahead of Production.
+- A critical production fix must not be delayed for portfolio work, but the required public review must remain tracked and be completed after the release.
+- Never copy confidential evidence to prove a public claim.
+
+This rule must also remain present in the private repository’s root agent instructions so production agents cannot miss it.
+
 ## Non-negotiable separation
 
 Never copy, expose, or reconstruct production implementation details here.
@@ -77,9 +104,9 @@ Every public statement must fit one of these categories:
 
 Use precise language:
 
-- Say “designed for an audience of more than 40,000 users,” not “load-tested at 40,000 concurrent users,” unless a verified test exists.
+- Say “the business has an audience of more than 40,000 people,” not “40,000 registered members” or “load-tested at 40,000 concurrent users,” unless verified evidence exists.
 - Say “CRM-ready integration events are written to a durable outbox,” not “fully synchronized CRM,” while the downstream consumer remains an extension point.
-- Say “no additional recurring platform subscription beyond the existing premium Webflow plan,” not a currency savings amount unless a defensible comparison is documented.
+- Say “no separate membership SaaS subscription was introduced at launch.” Do not imply that future Webflow Cloud usage or overages are always free, and do not publish a currency savings amount without a defensible comparison.
 - Say “server-authorized gated delivery,” not “unbreakable” or “perfectly secure.”
 - Say “production MVP is live and owner-confirmed,” not that every future roadmap capability is live.
 

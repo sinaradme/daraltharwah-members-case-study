@@ -262,7 +262,7 @@ The architecture favors fewer calls over shared caching of private member data:
 - External calls use bounded wait times.
 - Integration delivery is asynchronous and idempotent.
 
-This design supports the product context of more than 40,000 users. The public case study does not publish or imply a specific concurrent-load benchmark.
+This design was chosen for a business with an audience of more than 40,000 people. That is business context, not a claim of 40,000 registered members, concurrent sessions, or a published load-test result.
 
 ## Deployment separation
 
