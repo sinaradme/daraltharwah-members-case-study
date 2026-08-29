@@ -2,6 +2,8 @@
 
 I built the member layer for Dar Al Tharwah as an extension of its existing Webflow site. The production application is live; its code and operational details remain private.
 
+My role covered product design, Webflow design and development, and the architecture and implementation of the custom application layer on Webflow Cloud.
+
 My goal was not to force Webflow to behave like a backend, and it was not to replace a site that already worked. I kept presentation in Webflow and moved identity, data, authorization, and delivery into a mounted application on Webflow Cloud.
 
 ## 1. Project Overview

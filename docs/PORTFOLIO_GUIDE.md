@@ -8,6 +8,19 @@ Its audience is recruiters, hiring managers, technical reviewers, product leader
 
 This repository is documentation-only. It is not a deployable copy, an open-source edition, a backup, or a sanitized fork of production.
 
+## Webflow identity and publishing scope
+
+The project may not yet be listed on the owner's public Webflow Creator Profile or Made in Webflow. This limits only direct claims or links to that public profile or showcase.
+
+It does not remove or reduce:
+
+- The live production website hosted through Webflow
+- The Webflow and Webflow Cloud architecture documented here
+- The owner's role in product design, Webflow design and development, and custom application implementation
+- The project's value as a Webflow portfolio case study
+
+Do not add a public Webflow profile, Made in Webflow, or showcase link until the owner confirms that it exists and can be published. Do not interpret that limitation as a reason to remove the live site, Webflow-specific work, or the owner's project credit.
+
 ## Source of truth
 
 The private production repository is the only source of truth for:
