@@ -55,7 +55,7 @@ The boundary is intentional:
 | D1 / Drizzle | Members, submissions, content, enrollments, rate limits and outbox records |
 | Integration outbox | Durable handoff to asynchronous CRM/email consumers |
 
-The browser presents state. It never grants access. Protected content is authorized again on the server and streamed without exposing its source reference.
+The browser presents state. It never grants access. Protected downloads are authorized again on the server and streamed without exposing their source reference. Enrolled course viewers receive the video references needed for browser playback; an unlisted YouTube video is not DRM and its link can be shared.
 
 ## Why I chose this approach
 

@@ -144,7 +144,7 @@ High-level data domains include:
 - CAPTCHA tokens are verified and discarded.
 - Raw rate-limit subjects are not stored.
 - Applied migrations are immutable; changes use ordered, additive migrations.
-- Content delivery references remain server-side.
+- Download delivery references remain server-side. Authorized course viewers receive browser playback references; unlisted YouTube links can be shared and are not DRM.
 - Related writes are batched where they must be ordered and completed together.
 
 ### Query and write strategy
@@ -214,7 +214,7 @@ Newsletter submission does not create a member account.
 
 The browser cannot replace canonical member identity with submitted contact values.
 
-### Gated resource delivery
+### Gated download delivery
 
 1. The component asks the application for an access state using a stable content key.
 2. The server resolves the member, active content, and enrollment.

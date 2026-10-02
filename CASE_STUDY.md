@@ -99,7 +99,7 @@ I used joined reads and batches where they reduced round trips without weakening
 
 A hidden button is not access control. Code Components can show signed-out, locked, enrollment, or ready states, but the server remains authoritative.
 
-The content source is not returned to the browser. Delivery is checked again at request time.
+Download source references are not returned to the browser; delivery is checked again at request time. Enrolled course viewers receive the video references required for browser playback. Unlisted YouTube links can be shared and are not DRM.
 
 ### Integrations use an outbox
 
