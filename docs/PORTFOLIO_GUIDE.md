@@ -118,10 +118,12 @@ Every public statement must fit one of these categories:
 Use precise language:
 
 - Say “the business has an audience of more than 40,000 people,” not “40,000 registered members” or “load-tested at 40,000 concurrent users,” unless verified evidence exists.
-- Say “CRM-ready integration events are written to a durable outbox,” not “fully synchronized CRM,” while the downstream consumer remains an extension point.
+- Say “CRM-ready integration events are written to a durable outbox,” not “fully synchronized CRM,” while downstream implementation, final quality checks, or production activation remain pending.
 - Say “no separate membership SaaS subscription was introduced at launch.” Do not imply that future Webflow Cloud usage or overages are always free, and do not publish a currency savings amount without a defensible comparison.
 - Say “server-authorized gated delivery,” not “unbreakable” or “perfectly secure.”
 - Say “production MVP is live and owner-confirmed,” not that every future roadmap capability is live.
+- Describe performance changes through verified request/query budgets or scheduling decisions. Passing tests and API smoke checks do not establish a percentage speedup, regional latency benchmark, or a full authenticated browser pass.
+- Keep a downstream integration's implementation status separate from its activation and operational acceptance. Durable outbox events do not prove exactly-once external delivery.
 
 Avoid vague terms such as revolutionary, enterprise-grade, seamless, cutting-edge, infinitely scalable, or military-grade. Prefer observable behavior, clear ownership, and stated limits.
 

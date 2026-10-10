@@ -92,7 +92,7 @@ At a public level, the application exposes three categories of behavior:
 
 | Category | Examples | Trust requirement |
 | --- | --- | --- |
-| Public/system | Service health, safe runtime configuration | No member data |
+| Public/system | Service health, safe runtime configuration, course syllabus metadata | No member data or private playback references |
 | Public mutation | Newsletter submission | Origin, validation, rate limit, honeypot, Turnstile |
 | Authenticated member | Bootstrap, account, resources, access, enrollment, delivery | Authoritative server identity; Origin validation for mutations |
 
@@ -163,7 +163,9 @@ These budgets are regression-tested at the contract level. They are not presente
 
 Member-facing operations do not call a CRM or email provider synchronously.
 
-Instead, domain operations create versioned integration events with a unique deduplication key. Current event families cover member creation, welcome requests, form submissions, and enrollment creation.
+Instead, domain operations create versioned integration events with a unique deduplication key. Event producers cover member creation and profile updates, welcome requests, form submissions, consultation requests, and enrollment creation. These events describe stored application work; their existence does not imply that a downstream integration is active.
+
+The following diagram describes the intended downstream processing pattern, rather than an activated CRM service:
 
 ~~~mermaid
 sequenceDiagram
@@ -178,13 +180,13 @@ sequenceDiagram
     D-->>A: Persisted
     A-->>M: Success
     O->>D: Claim pending event
-    O->>C: Send idempotent operation
+    O->>C: Deliver downstream work
     O->>D: Mark completed or retry
 ~~~
 
 This pattern prevents third-party availability from controlling registration, form submission, or enrollment persistence.
 
-The durable outbox producer is implemented. A production-grade downstream consumer is a documented extension point and should add authenticated scheduling, bounded retries, failure review, metrics, reconciliation, and safe logging.
+The durable outbox producer is implemented. A scoped HubSpot consumer is under development; completion, final quality checks, configuration, and production activation remain pending. Downstream CRM/email delivery is not a verified production capability. Recovery, duplicate-side-effect handling, failure review, metrics, reconciliation, and safe logging require their own operational acceptance.
 
 ## Core data flows
 
@@ -260,7 +262,13 @@ The architecture favors fewer calls over shared caching of private member data:
 - Joined queries resolve content and resources without query chains.
 - Related writes use D1 batches.
 - External calls use bounded wait times.
-- Integration delivery is asynchronous and idempotent.
+- Integration events are durably enqueued and deduplicated; downstream delivery remains pending activation.
+- Authenticated bootstrap overlaps the independent limiter and member lookup, waits for both, and preserves limiter-error precedence before identity synchronization or member writes.
+- Only the exact public course syllabus endpoint avoids identity middleware. It exposes active syllabus metadata, while video references, member progress, and protected member APIs retain authorization.
+
+Bootstrap still performs the same number of database statements. The trade-off is one indexed read even on a rate-limited authenticated request; no member write follows a rejected check. The public syllabus optimization introduces no shared cache of private member data.
+
+The 10 October 2026 production follow-up passed automated scheduling/security regression tests and live API smoke checks after staging and production deployment. These establish the checked contracts and release state, not regional p95 latency, load capacity, or complete authenticated browser QA.
 
 This design was chosen for a business with an audience of more than 40,000 people. That is business context, not a claim of 40,000 registered members, concurrent sessions, or a published load-test result.
 
@@ -288,6 +296,6 @@ The current MVP does not claim to provide:
 - Complex organizational roles
 - A full admin portal
 - Private-object storage delivery
-- A completed downstream CRM/email consumer
+- A completed and activated downstream CRM/email integration
 
 These are extension decisions rather than hidden launch gaps. Each would require its own product policy, security, privacy, data, operations, and rollback design.

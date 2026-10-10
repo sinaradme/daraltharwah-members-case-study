@@ -61,9 +61,9 @@ The browser presents state. It never grants access. Protected downloads are auth
 
 It preserved the parts of Webflow that were already working well while moving identity, data, and access control to the server.
 
-I also kept third-party integrations out of the request path. Registration, forms, and enrollment do not wait for a CRM or email provider. They write an idempotent outbox event that a separate consumer can process safely.
+I also kept third-party integrations out of the request path. Registration, forms, and enrollment do not wait for a CRM or email provider. They write deduplicated events to a durable outbox. Downstream CRM/email delivery remains pending completion and activation; it is not presented as a live production integration.
 
-Performance work focused on fewer requests and fewer database round trips: coalesced reads, single-flight bootstrap, indexed joined queries, atomic rate-limit decisions, and batched domain/outbox writes.
+Performance work focused on fewer requests and fewer database round trips: coalesced reads, single-flight bootstrap, indexed joined queries, atomic rate-limit decisions, and batched domain/outbox writes. A production follow-up overlaps the independent member lookup and rate-limit check after authentication, and removes unnecessary identity middleware from the public course syllabus endpoint. Protected member endpoints retain their identity checks.
 
 ## Live evidence
 
@@ -83,6 +83,9 @@ The private repository contains the implementation, tests, migrations, CI histor
 - Gated content is enforced by server APIs rather than hidden UI.
 - The product supports public and authenticated workflows in English and Arabic.
 - No separate membership SaaS subscription was introduced.
+- The API latency follow-up was released on 10 October 2026 after 157 automated tests, build checks, and live staging/production API smoke checks passed.
+
+The release checks covered public API responses, signed-out access restrictions, and rejected mutation requests. They do not establish a percentage latency improvement, a regional load benchmark, or a complete authenticated browser test.
 
 Dar Al Tharwah has a business audience of more than 40,000 people. That is business context, not a claim of 40,000 registered members or 40,000 concurrent users.
 

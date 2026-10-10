@@ -107,7 +107,7 @@ Registration, forms, and enrollment should not fail because a CRM or email provi
 
 The application writes versioned, deduplicated outbox events with the related domain operation. A separate worker can claim and process them with retries.
 
-The producer is implemented. The downstream CRM/email consumer remains an extension point; I do not present it as a completed real-time sync.
+The durable event producer is implemented. A scoped HubSpot consumer is in development and awaits completion, final quality checks, configuration, and production activation. CRM/email delivery is not a verified live capability. Deduplicated events do not by themselves prove that external side effects cannot be duplicated.
 
 ### Performance has explicit budgets
 
@@ -119,8 +119,12 @@ I focused on avoidable work:
 - Rate limiting uses one atomic statement.
 - Related domain and outbox writes are batched.
 - External verification and content-provider waits are bounded.
+- After server authentication, bootstrap overlaps the independent rate-limit check and member lookup. Both must finish, and the rate-limit check must succeed before the result is used or member data is written.
+- Public course syllabus metadata bypasses unnecessary identity middleware; private lessons, account data, and delivery retain server authorization.
 
 The private project documents measurable reductions, including two concurrent normal GETs becoming one browser request and content access moving from three D1 statements to one joined query.
+
+The later bootstrap optimization changes scheduling, not the number of database statements. It trades an indexed lookup on rate-limited authenticated requests for overlapping the successful path; rejected requests still cannot initialize or synchronize a member. These are specific architectural reductions in avoidable waiting, not a published percentage improvement in end-user latency.
 
 ## 7. Security Approach
 
@@ -175,6 +179,14 @@ The result is practical:
 - The member experience supports English/Arabic and LTR/RTL.
 - CRM/email work has a durable integration boundary.
 - The business did not add a separate membership SaaS subscription.
+
+### Production API follow-up — 10 October 2026
+
+The bootstrap scheduling and public-syllabus middleware improvements were promoted through staging and deployed to production. The release passed 157 automated tests, type checks, lint, database migration-drift checks, the application build, and Code Component checks.
+
+Live API smoke checks passed after deployment in both staging and production. They verified service health, safe public configuration, public syllabus metadata without private playback references, signed-out session state, access rejection for protected member resources, and rejection of mutation requests with missing or cross-site Origin values. The checks created no member or CRM records.
+
+Authenticated browser end-to-end testing was not completed for this follow-up because browser automation was unavailable. No regional latency benchmark or percentage speedup is claimed. The release required no database migration, visual change, or CRM activation.
 
 Implementation details, tests, migrations, CI checks, and release history are verified in the private production repository.
 
