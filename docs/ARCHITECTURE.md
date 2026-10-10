@@ -268,8 +268,6 @@ The architecture favors fewer calls over shared caching of private member data:
 
 Bootstrap still performs the same number of database statements. The trade-off is one indexed read even on a rate-limited authenticated request; no member write follows a rejected check. The public syllabus optimization introduces no shared cache of private member data.
 
-The 10 October 2026 production follow-up passed automated scheduling/security regression tests and live API smoke checks after staging and production deployment. These establish the checked contracts and release state, not regional p95 latency, load capacity, or complete authenticated browser QA.
-
 This design was chosen for a business with an audience of more than 40,000 people. That is business context, not a claim of 40,000 registered members, concurrent sessions, or a published load-test result.
 
 ## Deployment separation

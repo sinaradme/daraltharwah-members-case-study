@@ -106,6 +106,16 @@ Future updates should focus on presentation and explanation:
 
 Updates should remain documentation-first. Do not turn this repository into a demo application unless the owner explicitly changes its purpose and defines a safe, independent implementation.
 
+## Editorial standard
+
+The case study is a product and project narrative, not a release diary. Structure it around the challenge, the owner's role, constraints, approach, key decisions, delivered outcome, and lessons.
+
+Include a change only when it materially explains the project's problem, solution, trade-off, or outcome. A production release does not automatically require a new case-study section.
+
+Keep API mechanics and detailed technical flows in the architecture document. Keep release dates, test counts, smoke-check transcripts, tool limitations, incident records, and deployment checklists out of the case-study narrative and README. Maintenance instructions belong in this guide.
+
+Do not invent research activities, team members, timelines, metrics, or business outcomes. Describe limitations briefly where they affect the reader's understanding, and distinguish delivered capabilities from future work.
+
 ## Claim standard
 
 Every public statement must fit one of these categories:

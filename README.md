@@ -1,98 +1,45 @@
-# Dar Al Tharwah Members — Webflow Cloud Membership Case Study
+# Dar Al Tharwah Members
 
-I built a membership and gated-content layer for [Dar Al Tharwah](https://daraltharwa.com/) without rebuilding its Webflow website or adding a separate membership SaaS.
+A case study of designing and building a custom membership experience for an existing English and Arabic Webflow website.
 
-My role covered product design, Webflow design and development, and the architecture and implementation of the custom application layer on Webflow Cloud.
+**My role:** product design, Webflow design and development, application architecture, and implementation.
 
-The production code is private. This repository documents the problem, the architecture I chose, the trade-offs, and the parts of the result that can be verified publicly.
+[Read the case study](CASE_STUDY.md) · [Explore the architecture](docs/ARCHITECTURE.md) · [Visit the live website](https://daraltharwa.com/)
 
-[Read the case study](CASE_STUDY.md) · [View the architecture](docs/ARCHITECTURE.md)
+## The project
 
-## The problem
+Dar Al Tharwah needed accounts, personal resources, protected downloads, and course progress connected to its public educational website.
 
-Dar Al Tharwah already had a bilingual Webflow site, CMS, design system, and publishing workflow. It needed registration, authentication, member profiles, protected downloads, consultation requests, and a clean path to CRM/email integrations.
+I extended the existing site with a Webflow Cloud application. Webflow continues to manage pages, CMS content, and presentation; the application handles member data and trusted access decisions.
 
-Moving the whole site to a conventional application stack would have duplicated working design and content systems. A membership plugin would have added another subscription and another platform boundary. Keeping authorization in browser scripts was not acceptable.
+## What was delivered
 
-I kept Webflow as the site and added a proper application boundary on Webflow Cloud.
+- Email/password and Google sign-in, account verification, and recovery
+- Member profiles and a personal resource dashboard
+- Server-authorized courses and download delivery
+- Course enrollment and lesson progress
+- Public newsletter and authenticated consultation workflows
+- English and Arabic interfaces with right-to-left support
 
-## What I built
+## Why this architecture
 
-- Registration and login with email/password and Google
-- Member bootstrap and profile management
-- Public newsletter and authenticated consultation flows
-- Server-authorized gated downloads
-- English/Arabic and LTR/RTL interactive states
-- Durable, idempotent events for future CRM/email processing
-- Separate staging and production release paths
+Webflow owns publishing and presentation, Clerk owns identity, and a Next.js application on Webflow Cloud owns application rules. D1 stores the product's profiles, resources, enrollments, and progress.
 
-## Architecture
+This separation preserves the site's publishing workflow while providing a foundation for member services. Performance work reduces duplicate reads, database round trips, and unnecessary sequential waits while retaining server-side authorization.
 
-~~~mermaid
-flowchart TD
-    W["Webflow<br/>Pages, CMS, design system"]
-    C["Code Components<br/>Interactive member UI"]
-    A["Webflow Cloud<br/>Next.js APIs and business rules"]
-    I["Clerk<br/>Identity and sessions"]
-    D["D1 + Drizzle<br/>Application data"]
-    O["Integration outbox<br/>CRM and email events"]
+## Outcome and scope
 
-    W --> C
-    C --> A
-    A --> I
-    A --> D
-    A --> O
-~~~
+The membership MVP is live. It adds member capabilities to the existing website without a separate membership SaaS subscription at launch.
 
-The boundary is intentional:
+CRM integration remains in development. Payments, subscriptions, certificates, advanced assessments, and a full administration portal are outside the current MVP. Course playback uses unlisted YouTube videos, whose links can be shared.
 
-| Layer | Responsibility |
-| --- | --- |
-| Webflow | Pages, content, visual system, responsive behavior, EN/AR and RTL |
-| Code Components | Accessible interactive UI inside Webflow-authored surfaces |
-| Webflow Cloud / Next.js | Validation, authorization, business rules and protected delivery |
-| Clerk | Registration, verification, recovery and sessions |
-| D1 / Drizzle | Members, submissions, content, enrollments, rate limits and outbox records |
-| Integration outbox | Durable handoff to asynchronous CRM/email consumers |
+The case study describes verified capabilities and architectural decisions. It makes no claim of measured conversion growth, quantified savings, or benchmarked latency improvements.
 
-The browser presents state. It never grants access. Protected downloads are authorized again on the server and streamed without exposing their source reference. Enrolled course viewers receive the video references needed for browser playback; an unlisted YouTube video is not DRM and its link can be shared.
+## Explore
 
-## Why I chose this approach
+- [Case study](CASE_STUDY.md): challenge, role, approach, decisions, outcome, and lessons
+- [Architecture](docs/ARCHITECTURE.md): system responsibilities, data flows, and trade-offs
+- [Portfolio guide](docs/PORTFOLIO_GUIDE.md): editorial and confidentiality requirements
+- [Live books collection](https://daraltharwa.com/books): public resource entry points
 
-It preserved the parts of Webflow that were already working well while moving identity, data, and access control to the server.
-
-I also kept third-party integrations out of the request path. Registration, forms, and enrollment do not wait for a CRM or email provider. They write deduplicated events to a durable outbox. Downstream CRM/email delivery remains pending completion and activation; it is not presented as a live production integration.
-
-Performance work focused on fewer requests and fewer database round trips: coalesced reads, single-flight bootstrap, indexed joined queries, atomic rate-limit decisions, and batched domain/outbox writes. A production follow-up overlaps the independent member lookup and rate-limit check after authentication, and removes unnecessary identity middleware from the public course syllabus endpoint. Protected member endpoints retain their identity checks.
-
-## Live evidence
-
-The production site is public:
-
-- [Dar Al Tharwah](https://daraltharwa.com/)
-- [Books library](https://daraltharwa.com/books)
-- [Bingo — registered-member download state](https://daraltharwa.com/books/bingo-the-path-to-wealth)
-- [The Wealth Seeker — registered-member download state](https://daraltharwa.com/books/the-wealth-seeker)
-
-The private repository contains the implementation, tests, migrations, CI history, and release evidence. It remains the source of truth.
-
-## Results
-
-- The membership MVP is live in production.
-- The existing Webflow design and editorial workflow stayed intact.
-- Gated content is enforced by server APIs rather than hidden UI.
-- The product supports public and authenticated workflows in English and Arabic.
-- No separate membership SaaS subscription was introduced.
-- The API latency follow-up was released on 10 October 2026 after 157 automated tests, build checks, and live staging/production API smoke checks passed.
-
-The release checks covered public API responses, signed-out access restrictions, and rejected mutation requests. They do not establish a percentage latency improvement, a regional load benchmark, or a complete authenticated browser test.
-
-Dar Al Tharwah has a business audience of more than 40,000 people. That is business context, not a claim of 40,000 registered members or 40,000 concurrent users.
-
-At launch, the project operated within the existing Webflow plan and avoided a separate membership-platform subscription. Webflow Cloud usage limits and possible overages still apply; I do not claim zero marginal cost at every future load level.
-
-## Repository scope
-
-This is a portfolio case study, not an open-source copy of production. It contains no production code, credentials, customer data, environment values, or private operational configuration.
-
-For the full decision record, read [CASE_STUDY.md](CASE_STUDY.md). For system boundaries and data flows, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+This is a documentation-only portfolio repository. Production implementation and operational records remain private.

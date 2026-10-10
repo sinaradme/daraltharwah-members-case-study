@@ -1,206 +1,99 @@
-# Dar Al Tharwah Members — Webflow Cloud Case Study
+# Dar Al Tharwah Members
+## Extending a Webflow website with a custom membership experience
 
-I built the member layer for Dar Al Tharwah as an extension of its existing Webflow site. The production application is live; its code and operational details remain private.
+Dar Al Tharwah needed a member experience connected to its existing educational website: account access, personal resources, protected downloads, and course progress. I designed and implemented a membership layer using Webflow, Webflow Cloud, Next.js, Clerk, and D1.
 
-My role covered product design, Webflow design and development, and the architecture and implementation of the custom application layer on Webflow Cloud.
+The resulting production MVP brings those capabilities into the existing English and Arabic website while preserving Webflow as the team's publishing and design environment.
 
-My goal was not to force Webflow to behave like a backend, and it was not to replace a site that already worked. I kept presentation in Webflow and moved identity, data, authorization, and delivery into a mounted application on Webflow Cloud.
+## My role
 
-## 1. Project Overview
+I was responsible for product design, Webflow design and development, application architecture, and implementation of the custom membership layer. My work connected the member journeys and interface states to the identity, data, and access rules behind them.
 
-The member experience includes:
+## The challenge
 
-- Email/password and Google registration and login
-- Member initialization and profile management
-- A public newsletter form
-- An authenticated consultation form
-- Gated courses and downloads
-- Server-authorized file delivery
-- Durable integration events for CRM/email processing
+The public website already had its own content structure and visual language. Adding membership introduced a different set of requirements: visitors needed to become members, members needed a personal dashboard, and access to protected resources needed to depend on trusted account and enrollment data.
 
-Webflow still owns the pages, CMS, design system, responsive behavior, English/Arabic content, and RTL presentation. The application adds the stateful and security-sensitive behavior around it.
+The challenge was to make these journeys part of one website while keeping content management practical. Moving all presentation into a separate application would have changed the publishing workflow. Putting access decisions in browser components would have weakened the protection of member resources.
 
-## 2. Business Challenge
+The business also had an audience of more than 40,000 people. That context made a maintainable foundation important, although it did not establish a registered-member count or concurrent-user requirement.
 
-Dar Al Tharwah needed membership functionality, but the larger problem was architectural.
+## The approach
 
-The site already had a working Webflow design and publishing workflow. Rebuilding it in Next.js would have duplicated the frontend and made content work harder. A membership plugin would have introduced another subscription, vendor model, and integration surface. Browser-only membership logic would not provide trustworthy authorization or a durable data model.
+I separated responsibilities around the work each platform was suited to own:
 
-I needed a solution that kept Webflow useful while adding a real application boundary.
+- **Webflow** manages public pages, CMS content, the visual system, and English/Arabic presentation.
+- **Webflow Cloud and Next.js** handle application rules, validated requests, member state, and protected delivery.
+- **Clerk** manages identity, authentication, verification, and sessions.
+- **D1 and Drizzle** manage application profiles, resources, enrollments, and progress.
 
-## 3. Constraints
+This structure allowed the public site and membership features to evolve together. Reusable components connect Webflow-authored pages to the application layer, while trusted decisions remain on the server.
 
-I worked within six constraints:
+## The member experience
 
-- Webflow had to remain the visual and editorial source of truth.
-- The custom layer could not create a second site shell.
-- Passwords, verification, recovery, and sessions needed a dedicated identity provider.
-- Protected content had to be authorized on the server.
-- English/Arabic, LTR/RTL, responsive and accessible states had to remain consistent.
-- Production and staging needed a controlled release path.
+### From visitor to member
 
-I also wanted to avoid a separate membership SaaS subscription. That influenced the architecture, but it did not justify weakening identity or access control.
+Members can register and sign in with email and password or Google. Clerk handles verification, recovery, and sessions. The application then initializes the member profile and stores the information needed by the product.
 
-## 4. Why Webflow + Webflow Cloud
+Profile completion requires a first and last name; phone and country are optional. This keeps the initial account requirements focused while supporting later profile updates.
 
-Webflow already handled the work it was good at: page composition, CMS content, styles, responsive behavior, and localization.
+### A personal place for resources
 
-Webflow Cloud supplied the missing application layer. I could mount Next.js APIs alongside the site, keep browser requests on the same product surface, and handle business rules on the server.
+The dashboard gives members a place to return to their resources. Course enrollment and lesson completion connect access with progress, allowing the experience to continue across sessions.
 
-This split avoided a replatforming project:
+The interface supports English and Arabic, including right-to-left presentation. Webflow remains responsible for visual composition, with interactive components handling account, loading, error, and success states.
 
-| Layer | What I kept there |
-| --- | --- |
-| Webflow | Content, layout, visual system, breakpoints, EN/AR and RTL |
-| Code Components | Interactive UI inside Webflow pages |
-| Webflow Cloud | APIs, validation, authorization and delivery |
-| Clerk | Identity and sessions |
-| D1 / Drizzle | Application-owned data |
-| Integration outbox | Durable external-work events |
+### Access that follows product rules
 
-The trade-off is coordination across several surfaces. I addressed that with explicit ownership, shared API contracts, tests, staging, and release documentation.
+Protected courses and downloads use server-derived identity and enrollment checks. A hidden button or a browser-supplied account claim cannot grant access.
 
-## 5. Solution Architecture
+Downloads are authorized again when delivered, and their underlying source references stay on the server. Authorized course viewers receive the playback information they need. The use of unlisted YouTube videos supports the current course experience, with the understood limitation that those links can be shared.
 
-A normal request moves through these layers:
+### Forms with different purposes
 
-~~~text
-Webflow page
-  -> Code Component or browser runtime
-  -> mounted Next.js API on Webflow Cloud
-  -> server domain/security service
-  -> Clerk and/or D1
-  -> optional integration-outbox event
-~~~
+The newsletter remains available to public visitors. Consultation requests require an authenticated, initialized member. Both workflows validate submissions and apply consent and abuse-prevention controls appropriate to their purpose.
 
-The browser receives state and renders the correct experience. It does not decide whether a member can access content.
+These distinctions let the site support audience growth and member services without treating every visitor as an account holder.
 
-For a gated download, the server resolves the current member, content record, and enrollment. The delivery route authorizes the request again, validates the destination, follows only approved redirects, and streams the file without returning the underlying delivery reference.
+## Key decisions and trade-offs
 
-For forms, the server validates the Origin and payload, applies rate limiting, verifies Turnstile, persists the submission, and writes its integration event.
+### Keep identity separate from application data
 
-The detailed public architecture is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Using Clerk for identity avoided introducing custom password and session management. D1 stores the profile and learning relationships owned by the application. This makes the boundary between signing in and receiving product access explicit.
 
-## 6. Technical Decisions
+### Reduce unnecessary work in the member journey
 
-### Clerk owns identity
+Performance work focused on reducing duplicate requests, database round trips, and sequential waits. Identical browser reads are coalesced, joined database reads resolve related resource information, and independent server work can run concurrently where authorization rules allow it.
 
-I did not build password or session handling. Clerk owns registration, verification, recovery, Google sign-in, and sessions. The server maps the authenticated identity to one internal member.
+Public syllabus metadata also avoids unnecessary identity processing. Protected member operations retain their authentication checks. These decisions reduce avoidable work without relying on shared caching of private member data; a numerical latency improvement would require a separate benchmark.
 
-D1 never stores passwords, verification codes, cookies, JWTs, session tokens, CAPTCHA tokens, or full Clerk objects.
+### Keep external integrations off the critical path
 
-### D1 stores application data
+Accepted member and form operations record durable integration events alongside application data. This creates a foundation for downstream services without making registration or submission depend on a third-party response.
 
-D1 contains members, content records, enrollments, form submissions, rate-limit counters, and integration events. Drizzle provides a typed schema and ordered migration history.
+CRM integration remains work in progress. Its completion and production activation are a next phase, rather than an outcome of this MVP.
 
-I used joined reads and batches where they reduced round trips without weakening privacy or correctness.
+### Define a focused MVP
 
-### Authorization stays on the server
+The first version concentrates on membership, resources, gated learning, and forms. Payments, subscriptions, certificates, advanced assessments, and a full administration portal are outside its current scope.
 
-A hidden button is not access control. Code Components can show signed-out, locked, enrollment, or ready states, but the server remains authoritative.
+That scope kept the architecture aligned with the immediate member experience and left larger product decisions for later phases.
 
-Download source references are not returned to the browser; delivery is checked again at request time. Enrolled course viewers receive the video references required for browser playback. Unlisted YouTube links can be shared and are not DRM.
+## Outcome
 
-### Integrations use an outbox
+The membership MVP is live on [Dar Al Tharwah](https://daraltharwa.com/). The existing website now supports account access, profiles, a member dashboard, protected resources, enrollment, and lesson progress within its English and Arabic experience.
 
-Registration, forms, and enrollment should not fail because a CRM or email provider is unavailable.
+The project retained Webflow's publishing workflow and introduced a custom application foundation for member services. No separate membership SaaS subscription was introduced at launch.
 
-The application writes versioned, deduplicated outbox events with the related domain operation. A separate worker can claim and process them with retries.
+The outcome is a delivered product capability and a maintainable separation of responsibilities. Conversion gains, quantified cost savings, and measured latency improvements are not established results of this case study.
 
-The durable event producer is implemented. A scoped HubSpot consumer is in development and awaits completion, final quality checks, configuration, and production activation. CRM/email delivery is not a verified live capability. Deduplicated events do not by themselves prove that external side effects cannot be duplicated.
+Public entry points include the [books collection](https://daraltharwa.com/books) and resource pages such as [Bingo: The Path to Wealth](https://daraltharwa.com/books/bingo-the-path-to-wealth) and [The Wealth Seeker](https://daraltharwa.com/books/the-wealth-seeker).
 
-### Performance has explicit budgets
+## What I learned
 
-I focused on avoidable work:
+A membership experience works best when its interface and access rules are designed together. Account status, profile readiness, enrollment, and progress each represent a different product state, and making those distinctions explicit helps both the interface and the application remain understandable.
 
-- Identical simultaneous member reads are coalesced.
-- Member bootstrap and runtime configuration are single-flight.
-- Content access and resource lists use indexed joined reads.
-- Rate limiting uses one atomic statement.
-- Related domain and outbox writes are batched.
-- External verification and content-provider waits are bounded.
-- After server authentication, bootstrap overlaps the independent rate-limit check and member lookup. Both must finish, and the rate-limit check must succeed before the result is used or member data is written.
-- Public course syllabus metadata bypasses unnecessary identity middleware; private lessons, account data, and delivery retain server authorization.
+The platform boundary was equally important. Keeping publishing in Webflow, identity in Clerk, and application rules in Webflow Cloud gave each part a clear responsibility. Performance improvements could then target unnecessary work without changing those boundaries.
 
-The private project documents measurable reductions, including two concurrent normal GETs becoming one browser request and content access moving from three D1 statements to one joined query.
+A focused first release also creates a clearer path forward. The current foundation supports future integration work, while the case study can describe the value already delivered without presenting planned capabilities as completed results.
 
-The later bootstrap optimization changes scheduling, not the number of database statements. It trades an indexed lookup on rate-limited authenticated requests for overlapping the successful path; rejected requests still cannot initialize or synchronize a member. These are specific architectural reductions in avoidable waiting, not a published percentage improvement in end-user latency.
-
-## 7. Security Approach
-
-The main security rules are straightforward:
-
-- Identity comes from Clerk on the server, not from browser-supplied user IDs or roles.
-- State-changing requests require an approved exact Origin.
-- Untrusted values are parsed, normalized, bounded, and validated server-side.
-- Turnstile is verified on the server and its token is discarded.
-- Rate-limit subjects are hashed rather than stored raw.
-- Member data remains private and is not shared-cached.
-- Delivery targets and redirects are allowlisted.
-- Browser state never grants access.
-- Secrets remain outside source code and documentation.
-
-The public repository intentionally omits credentials, environment values, provider identifiers, host allowlists, customer records, and private deployment details.
-
-## 8. Scalability Considerations
-
-Dar Al Tharwah has a business audience of more than 40,000 people. I designed the member layer with that audience in mind.
-
-This is not a claim of 40,000 registered members, 40,000 concurrent sessions, or a published load test.
-
-The relevant architecture choices are stateless routes, indexed reads, idempotent bootstrap, request coalescing, batched writes, bounded provider calls, and asynchronous integration delivery. These reduce avoidable load and keep vendor latency out of core user operations.
-
-Operational monitoring, outbox processing, rate-limit retention, and private-object delivery remain explicit extension areas.
-
-## 9. Cost Optimization Impact
-
-The project avoided a separate membership plugin or membership SaaS subscription. At launch, it operated within the Webflow plan already used by the site.
-
-The saving is therefore specific: no additional recurring membership-platform subscription and no replatforming project.
-
-I do not publish a currency savings estimate because there is no defensible vendor comparison in the production documentation. I also do not claim that future Webflow Cloud usage is free; plan limits and usage-based overages may apply as traffic grows.
-
-## 10. Results and Business Value
-
-The production MVP is live.
-
-Publicly verifiable examples include:
-
-- [Dar Al Tharwah](https://daraltharwa.com/)
-- [Books library](https://daraltharwa.com/books)
-- [Bingo registered-member gate](https://daraltharwa.com/books/bingo-the-path-to-wealth)
-- [The Wealth Seeker registered-member gate](https://daraltharwa.com/books/the-wealth-seeker)
-
-The result is practical:
-
-- The Webflow site and editorial workflow stayed in place.
-- Registration, login, profiles, forms, and gated downloads are working in production.
-- Protected content is enforced by server APIs.
-- The member experience supports English/Arabic and LTR/RTL.
-- CRM/email work has a durable integration boundary.
-- The business did not add a separate membership SaaS subscription.
-
-### Production API follow-up — 10 October 2026
-
-The bootstrap scheduling and public-syllabus middleware improvements were promoted through staging and deployed to production. The release passed 157 automated tests, type checks, lint, database migration-drift checks, the application build, and Code Component checks.
-
-Live API smoke checks passed after deployment in both staging and production. They verified service health, safe public configuration, public syllabus metadata without private playback references, signed-out session state, access rejection for protected member resources, and rejection of mutation requests with missing or cross-site Origin values. The checks created no member or CRM records.
-
-Authenticated browser end-to-end testing was not completed for this follow-up because browser automation was unavailable. No regional latency benchmark or percentage speedup is claimed. The release required no database migration, visual change, or CRM activation.
-
-Implementation details, tests, migrations, CI checks, and release history are verified in the private production repository.
-
-## 11. Key Learnings
-
-- A Webflow limitation does not automatically require a rebuild.
-- A hybrid system works when every layer has a clear owner.
-- UI state and authorization must remain separate.
-- External integrations should not sit in the critical user-request path.
-- Performance improvements are more credible when expressed as request and query budgets.
-- A public case study can show engineering judgment without exposing private code.
-
-## Evidence and maintenance
-
-The private production repository is the source of truth. This case study must be reviewed whenever production changes materially affect architecture, identity, data ownership, security, delivery, integration boundaries, scalability, cost, or verified results.
-
-If a public claim cannot be verified against the current production state or owner-provided business context, it must be narrowed or removed.
+For a deeper technical explanation, see the [architecture document](docs/ARCHITECTURE.md).
