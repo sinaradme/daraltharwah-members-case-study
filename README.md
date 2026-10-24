@@ -18,7 +18,8 @@ I extended the existing site with a Webflow Cloud application. Webflow continues
 - Member profiles and a personal resource dashboard
 - Server-authorized courses and download delivery
 - Course enrollment and lesson progress
-- Public newsletter and authenticated consultation workflows
+- Public newsletter and independent campaign forms
+- A guest consultation interface with details, scheduling and review; payment activation pending
 - English and Arabic interfaces with right-to-left support
 
 ## Why this architecture
@@ -31,7 +32,7 @@ This separation preserves the site's publishing workflow while providing a found
 
 The membership MVP is live. It adds member capabilities to the existing website without a separate membership SaaS subscription at launch.
 
-CRM integration remains in development. Payments, subscriptions, certificates, advanced assessments, and a full administration portal are outside the current MVP. Course playback uses unlisted YouTube videos, whose links can be shared.
+CRM integration remains in development. The guest consultation interface and its booking/payment foundation are deployed with online booking disabled pending merchant configuration. Active payment collection is not claimed. Subscriptions, certificates, advanced assessments, and a full administration portal remain outside the current MVP. Course playback uses unlisted YouTube videos, whose links can be shared.
 
 The case study describes verified capabilities and architectural decisions. It makes no claim of measured conversion growth, quantified savings, or benchmarked latency improvements.
 
