@@ -76,7 +76,7 @@ The application layer owns:
 - Origin validation for mutations
 - Input parsing, normalization, and validation
 - Member bootstrap and profile rules
-- Public newsletter, independent campaign forms and the guest consultation foundation
+- Public newsletter, independent campaign forms and free guest consultation requests
 - Gated-content state and enrollment rules
 - Authorized delivery proxying
 - Server-side Turnstile verification
@@ -93,7 +93,7 @@ At a public level, the application exposes three categories of behavior:
 | Category | Examples | Trust requirement |
 | --- | --- | --- |
 | Public/system | Service health, safe runtime configuration, course syllabus metadata | No member data or private playback references |
-| Public mutation | Newsletter and campaign submissions; consultation checkout remains disabled pending activation | Origin, validation, rate limit, honeypot, Turnstile |
+| Public mutation | Newsletter, campaign and free guest consultation submissions | Origin, validation, rate limit, honeypot, Turnstile |
 | Authenticated member | Bootstrap, account, resources, access, enrollment, delivery | Authoritative server identity; Origin validation for mutations |
 
 Member-specific responses remain private and non-cacheable by shared infrastructure. Short-lived browser-memory request coalescing is used only to reduce duplicate reads within the active experience and is invalidated by identity changes or mutations.
@@ -136,7 +136,7 @@ High-level data domains include:
 | Enrollments | Authoritative member-to-content relationship |
 | Form submissions | Newsletter and retained legacy records |
 | Campaign requests | Independent public campaign submissions |
-| Consultation foundation | Separate guest booking, capacity, payment-attempt and audit state; online booking not yet active |
+| Guest consultation | Separate free requests, slot ownership and durable delivery events; independent of member and campaign records |
 | Rate limits | Hashed fixed-window counters |
 | Integration outbox | Durable, deduplicated external-work events |
 
@@ -211,9 +211,11 @@ Newsletter submission does not create a member account.
 
 ### Consultation
 
-The deployed main-consultation interface has three stages: guest details, scheduling and review. It does not initialize a member or require sign-in. Campaign forms remain a separate product with their own records and delivery destinations.
+The deployed main-consultation interface has three stages: guest details, scheduling, and review with CAPTCHA and submission. It does not initialize a member, require sign-in or collect payment. Campaign forms remain a separate product with their own records and delivery destinations.
 
-The implemented booking foundation keeps capacity claims and payment attempts separate from member data. A hosted payment provider owns card entry; the server owns the price and verifies provider state before confirmation and downstream export. These are implementation boundaries, not a claim of completed financial acceptance: online booking remains disabled pending merchant configuration, and active paid bookings are not yet a verified Production capability.
+The server validates guest ownership, required details, consent, available time and CAPTCHA. A unique slot reservation and a durable delivery event are persisted together. Identical retries receive the existing confirmation. External delivery runs separately so a provider outage does not undo an accepted request. Delivery events alone do not prove that a row reached an external spreadsheet; operational acceptance must check the destination too.
+
+Historical payment records remain available for reconciliation; the active free request does not invoke payment creation. Newsletter, campaign and consultation forms retain their own purposes and server-side abuse controls.
 
 Account identity remains authoritative for member resources and gated content. Public contact details cannot grant member access.
 
@@ -244,7 +246,7 @@ The main controls are:
 - Exact trusted-Origin checks for state changes
 - Cross-site request rejection
 - Server-side type, length, value, path, and consent validation
-- Server-verified Turnstile
+- Server-verified Turnstile for newsletter, campaign and main consultation forms
 - Hashed rate-limit subjects
 - Safe return-path and delivery-destination allowlists
 - Revalidation of delivery redirects
@@ -290,7 +292,7 @@ Private branch names, runtime identifiers, environment values, and operational c
 
 The current MVP does not claim to provide:
 
-- Active payment collection (consultation foundation deployed, activation pending), or subscriptions
+- Payment collection or subscriptions
 - Certificates, quizzes, or an advanced LMS
 - Complex organizational roles
 - A full admin portal
