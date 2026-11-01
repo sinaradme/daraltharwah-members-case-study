@@ -167,7 +167,7 @@ Member-facing operations do not call a CRM or email provider synchronously.
 
 Instead, domain operations create versioned integration events with a unique deduplication key. Event producers cover member creation and profile updates, welcome requests, form submissions, consultation requests, and enrollment creation. These events describe stored application work; their existence does not imply that a downstream integration is active.
 
-The following diagram describes the intended downstream processing pattern, rather than an activated CRM service:
+The following diagram describes the downstream processing pattern; the presence of an adapter or source event does not independently establish activation or destination delivery:
 
 ~~~mermaid
 sequenceDiagram
@@ -264,8 +264,10 @@ The architecture favors fewer calls over shared caching of private member data:
 - Member reads remain private.
 - Joined queries resolve content and resources without query chains.
 - Related writes use D1 batches.
-- External calls use bounded wait times.
-- Integration events are durably enqueued and deduplicated; downstream delivery remains pending activation.
+- External calls use bounded wait times across a processing invocation, leaving time to preserve retry state.
+- Member spreadsheet projections coalesce concurrent changes durably; a busy processor does not discard a newer change.
+- Public compatibility scripts are generated and minified from readable source; production and development bundle validation are distinguished.
+- Integration events are durably enqueued and deduplicated; each destination has independent acceptance and delivery evidence.
 - Authenticated bootstrap overlaps the independent limiter and member lookup, waits for both, and preserves limiter-error precedence before identity synchronization or member writes.
 - Exact public syllabus and guest-form routes avoid unnecessary identity processing. Protected playback references, member progress and member APIs retain authorization.
 
@@ -297,6 +299,6 @@ The current MVP does not claim to provide:
 - Complex organizational roles
 - A full admin portal
 - Private-object storage delivery
-- A completed and activated downstream CRM/email integration
+- Guaranteed downstream delivery or independently verified activation of every CRM/email destination
 
 These are extension decisions rather than hidden launch gaps. Each would require its own product policy, security, privacy, data, operations, and rollback design.

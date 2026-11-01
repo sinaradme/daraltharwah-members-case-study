@@ -70,6 +70,8 @@ Public syllabus metadata also avoids unnecessary identity processing. Protected 
 
 ### Keep external integrations off the critical path
 
+Background projections also preserve concurrent member changes while another processor is busy. External HTTP work has an overall deadline so a slow provider does not consume the entire processing window. Build validation distinguishes production bundles from development output and generates minified compatibility scripts from readable sources. These are structural reliability and payload improvements, not a measured regional speedup.
+
 Accepted member and form operations record durable integration events alongside application data. This creates a foundation for downstream services without making registration or submission depend on a third-party response.
 
 CRM integration remains work in progress. Its completion and production activation are a next phase, rather than an outcome of this MVP.
