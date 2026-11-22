@@ -76,7 +76,7 @@ The application layer owns:
 - Origin validation for mutations
 - Input parsing, normalization, and validation
 - Member bootstrap and profile rules
-- Public newsletter, independent campaign forms and free guest consultation requests
+- Public newsletter, independent campaign forms and paid Oman guest consultation requests
 - Gated-content state and enrollment rules
 - Authorized delivery proxying
 - Server-side Turnstile verification
@@ -93,7 +93,7 @@ At a public level, the application exposes three categories of behavior:
 | Category | Examples | Trust requirement |
 | --- | --- | --- |
 | Public/system | Service health, safe runtime configuration, course syllabus metadata | No member data or private playback references |
-| Public mutation | Newsletter, campaign and free guest consultation submissions | Origin, validation, rate limit, honeypot, Turnstile |
+| Public mutation | Newsletter, campaign and paid Oman guest consultation submissions | Origin, validation, rate limit, honeypot, Turnstile |
 | Authenticated member | Bootstrap, account, resources, access, enrollment, delivery | Authoritative server identity; Origin validation for mutations |
 
 Member-specific responses remain private and non-cacheable by shared infrastructure. Short-lived browser-memory request coalescing is used only to reduce duplicate reads within the active experience and is invalidated by identity changes or mutations.
@@ -136,7 +136,7 @@ High-level data domains include:
 | Enrollments | Authoritative member-to-content relationship |
 | Form submissions | Newsletter and retained legacy records |
 | Campaign requests | Independent public campaign submissions |
-| Guest consultation | Separate free requests, slot ownership and durable delivery events; independent of member and campaign records |
+| Guest consultation | Separate paid Oman guest requests, provider-confirmed settlement, and durable delivery events |
 | Rate limits | Hashed fixed-window counters |
 | Integration outbox | Durable, deduplicated external-work events |
 
@@ -188,7 +188,7 @@ sequenceDiagram
 
 This pattern prevents third-party availability from controlling registration, form submission, or enrollment persistence.
 
-The durable outbox producer is implemented. A scoped HubSpot consumer is under development; completion, final quality checks, configuration, and production activation remain pending. Downstream CRM/email delivery is not a verified production capability. Recovery, duplicate-side-effect handling, failure review, metrics, reconciliation, and safe logging require their own operational acceptance.
+The durable outbox producer is implemented. A scoped HubSpot consumer is under development; completion, final quality checks, configuration, and production activation remain pending. Production email delivery has verified examples. Provider receipts are tracked separately from queue execution. Recovery, duplicate-side-effect handling, failure review, metrics, reconciliation, and safe logging require their own operational acceptance.
 
 ## Core data flows
 
@@ -211,11 +211,11 @@ Newsletter submission does not create a member account.
 
 ### Consultation
 
-The deployed main-consultation interface has three stages: guest details, scheduling, and review with CAPTCHA and submission. It does not initialize a member, require sign-in or collect payment. Campaign forms remain a separate product with their own records and delivery destinations.
+The deployed main consultation collects guest details and uses server-verified CAPTCHA before paid checkout for Oman. The payment provider confirms settlement. Campaign forms remain a separate product with their own records and delivery destinations.
 
 The server validates guest ownership, required details, consent, available time and CAPTCHA. A unique slot reservation and a durable delivery event are persisted together. Identical retries receive the existing confirmation. External delivery runs separately so a provider outage does not undo an accepted request. Delivery events alone do not prove that a row reached an external spreadsheet; operational acceptance must check the destination too.
 
-Historical payment records remain available for reconciliation; the active free request does not invoke payment creation. Newsletter, campaign and consultation forms retain their own purposes and server-side abuse controls.
+A private server-side scheduler checks unresolved payment attempts and runs bounded email queue recovery. The application retains settlement, eligibility and delivery rules. Newsletter, campaign and consultation forms retain their own purposes and server-side abuse controls.
 
 Account identity remains authoritative for member resources and gated content. Public contact details cannot grant member access.
 
@@ -294,7 +294,7 @@ Private branch names, runtime identifiers, environment values, and operational c
 
 The current MVP does not claim to provide:
 
-- Payment collection or subscriptions
+- Recurring subscriptions and broader payment products
 - Certificates, quizzes, or an advanced LMS
 - Complex organizational roles
 - A full admin portal

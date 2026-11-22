@@ -50,7 +50,7 @@ Downloads are authorized again when delivered, and their underlying source refer
 
 ### Forms with different purposes
 
-The newsletter remains available to public visitors. Campaign forms are independent public workflows. The main consultation has a separate guest flow for details, scheduling, review and submission. It requires neither a member account nor payment. Server-verified CAPTCHA protects new submissions.
+The newsletter remains available to public visitors. Campaign forms are independent public workflows. The main Oman consultation accepts guest details in a single step and uses a paid checkout. Server-verified CAPTCHA protects entry to checkout, and provider-confirmed settlement drives confirmation.
 
 The consultation service and campaign forms have separate records and external-delivery destinations. Neither changes the identity requirements of the member dashboard or gated resources. Input validation, consent and abuse-prevention controls remain server responsibilities.
 
@@ -78,7 +78,7 @@ CRM integration remains work in progress. Its completion and production activati
 
 ### Define a focused MVP
 
-The first version concentrates on membership, resources, gated learning, and forms. The guest consultation adds scheduling and free requests while keeping campaign forms separate. Payment collection is outside this consultation scope. Subscriptions, certificates, advanced assessments, and a full administration portal remain outside the current scope.
+The first version concentrates on membership, resources, gated learning, and forms. The Oman consultation adds a paid guest route while keeping campaign forms separate. Subscriptions, certificates, advanced assessments, and a full administration portal remain outside the current scope.
 
 That scope kept the architecture aligned with the immediate member experience and left larger product decisions for later phases.
 
